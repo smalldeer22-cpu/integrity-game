@@ -62,7 +62,7 @@
 <body>
 
 <div id="game-container">
-    <!-- UI Layer -->
+    <!-- 頂部資訊欄 -->
     <div id="ui-layer" class="absolute top-4 left-0 w-full flex justify-between px-6 z-20 pointer-events-none">
         <div class="bg-white/80 backdrop-blur rounded-full px-4 py-1 shadow-sm border border-white/50">
             <span class="text-blue-600 font-bold">得分：</span>
@@ -74,7 +74,7 @@
         </div>
     </div>
 
-    <!-- Start Screen -->
+    <!-- 遊戲首頁 -->
     <div id="start-screen" class="absolute inset-0 bg-white/95 z-40 flex flex-col items-center justify-center p-4 text-center">
         <!-- 盾牌圖示 -->
         <div class="mb-4">
@@ -111,18 +111,18 @@
         <button id="start-btn" class="bg-blue-600 text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg hover:bg-blue-700 active:scale-95 transition-all">
             開始挑戰
         </button>
-        <!-- 修改署名為 臺南市政府政風處 -->
-        <p class="mt-4 text-[10px] text-gray-400">臺南市政府政風處 關心您</p>
+        <!-- 更新署名為 臺南市政府政風處團隊 -->
+        <p class="mt-4 text-[10px] text-gray-400">臺南市政府政風處團隊</p>
     </div>
 
-    <!-- End Screen -->
+    <!-- 遊戲結束/結算畫面 -->
     <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex-col items-center p-6 text-center overflow-y-auto">
         <div id="result-status" class="text-3xl font-black mb-4 mt-8"></div>
         <div class="text-gray-500 text-sm">您的得分</div>
         <div class="text-6xl font-black text-blue-600 mb-4" id="final-score">0</div>
         <p id="result-comment" class="text-lg font-bold text-gray-800 mb-8 px-4"></p>
         
-        <!-- 法條宣導語 (三段式) -->
+        <!-- 三段式法條宣導語 -->
         <div class="grid grid-cols-3 gap-2 w-full mb-8 text-[11px] leading-tight text-gray-700 border-y border-gray-100 py-6 bg-gray-50/50 rounded-xl px-2">
             <div class="px-1 border-r border-gray-200 flex items-center justify-center">
                 「送錢給公務員關說？小心觸犯行賄罪！」
@@ -143,18 +143,22 @@
         </button>
     </div>
 
+    <!-- 碰撞紅色閃爍特效層 -->
     <div id="flash-overlay"></div>
 
     <!-- 遊戲中角色：可愛公務員 -->
     <div id="player">
         <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
+            <!-- 身體與服裝 -->
             <rect x="25" y="60" width="50" height="40" rx="15" fill="#3b82f6" />
             <path d="M45 60 L50 75 L55 60" fill="white" />
             <path d="M48 75 L50 90 L52 75" fill="#1d4ed8" />
+            <!-- 臉部細節 -->
             <circle cx="50" cy="35" r="30" fill="#FFD1BA" />
             <circle cx="40" cy="30" r="3" fill="#333" />
             <circle cx="60" cy="30" r="3" fill="#333" />
             <path d="M42 45 Q50 52 58 45" stroke="#333" stroke-width="2" fill="none" />
+            <!-- 文字標籤 -->
             <rect x="20" y="80" width="60" height="18" rx="4" fill="rgba(0,0,0,0.5)" />
             <text x="50" y="93" text-anchor="middle" fill="white" font-size="10" font-weight="bold">公務員</text>
         </svg>
@@ -181,6 +185,7 @@
     let items = [];
     let gameLoop;
 
+    // 掉落物配置 (依照需求清單)
     const config = {
         good: [
             { icon: '📜', pts: 10 }, 
@@ -198,8 +203,10 @@
         ]
     };
 
+    // 初始化玩家位置
     player.style.left = `${playerX}px`;
 
+    // 處理滑動邏輯 (手機端優化)
     gameContainer.addEventListener('touchmove', (e) => {
         if (!gameActive) return;
         const touchX = e.touches[0].clientX;
@@ -209,6 +216,7 @@
         player.style.left = `${playerX}px`;
     });
 
+    // 點擊開始按鈕
     document.getElementById('start-btn').addEventListener('click', () => {
         startScreen.classList.add('hidden');
         gameActive = true;
@@ -237,6 +245,7 @@
         }, 30);
     }
 
+    // 產生隨機掉落物
     function spawnItem() {
         if (Math.random() < 0.07) {
             const isGood = Math.random() > 0.45;
@@ -262,9 +271,10 @@
         }
     }
 
+    // 更新物品位置與碰撞偵測
     function updateItems() {
         const playerRect = player.getBoundingClientRect();
-        const pBufferX = 15;
+        const pBufferX = 15; // 寬度緩衝判定
         const pBufferY = 10;
 
         for (let i = items.length - 1; i >= 0; i--) {
@@ -274,6 +284,7 @@
 
             const itemRect = item.el.getBoundingClientRect();
 
+            // 精準碰撞判定 (修正過寬問題)
             if (
                 itemRect.bottom - 5 > playerRect.top + pBufferY &&
                 itemRect.top + 5 < playerRect.bottom - pBufferY &&
@@ -285,6 +296,7 @@
                 continue;
             }
 
+            // 超出邊界移除
             if (item.y > window.innerHeight) {
                 item.el.remove();
                 items.splice(i, 1);
@@ -292,6 +304,7 @@
         }
     }
 
+    // 物品收集反饋
     function collectItem(item) {
         const pts = item.config.pts;
         score += pts;
@@ -316,6 +329,7 @@
         setTimeout(() => flashOverlay.style.display = 'none', 100);
     }
 
+    // 遊戲結束邏輯
     function endGame() {
         gameActive = false;
         clearInterval(gameLoop);
@@ -324,11 +338,11 @@
 
         finalScoreElement.innerText = score;
         
+        // 分數評語判定與領獎提示 (依照需求修正)
         if (score >= 85) {
             resultStatus.innerText = "挑戰成功";
             resultStatus.className = "text-3xl font-black mb-4 mt-8 text-green-600";
             resultComment.innerText = "「清廉大師！您是社會誠信的典範！」";
-            // 修改後的領獎文字
             prizeMessage.innerText = "請向工作人員出示此畫面領取宣導品";
         } else if (score >= 60) {
             resultStatus.innerText = "挑戰成功";
