@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>清廉守門員 - 廉政宣導互動遊戲</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            touch-action: none;
+            overflow: hidden;
+            background-color: #f0f9ff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, #7dd3fc, #e0f2fe);
+            overflow: hidden;
+        }
+        #player {
+            position: absolute;
+            bottom: 40px;
+            width: 80px;
+            height: 80px;
+            transition: transform 0.1s ease-out;
+            z-index: 10;
+        }
+        .falling-item {
+            position: absolute;
+            font-size: 40px;
+            user-select: none;
+            z-index: 5;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #flash-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(255, 0, 0, 0.3);
+            display: none;
+            pointer-events: none;
+            z-index: 50;
+        }
+        .floating-text {
+            position: absolute;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 1s ease-out forwards;
+            z-index: 60;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0); opacity: 1; }
+            100% { transform: translateY(-50px); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- UI Layer -->
+    <div id="ui-layer" class="absolute top-4 left-0 w-full flex justify-between px-6 z-20 pointer-events-none">
+        <div class="bg-white/80 backdrop-blur rounded-full px-4 py-1 shadow-sm border border-white/50">
+            <span class="text-blue-600 font-bold">得分：</span>
+            <span id="score" class="text-xl font-black">0</span>
+        </div>
+        <div class="bg-white/80 backdrop-blur rounded-full px-4 py-1 shadow-sm border border-white/50">
+            <span class="text-red-600 font-bold">時間：</span>
+            <span id="timer" class="text-xl font-black">20</span>s
+        </div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="absolute inset-0 bg-white/95 z-40 flex flex-col items-center justify-center p-4 text-center">
+        <!-- 盾牌圖示 -->
+        <div class="mb-4">
+            <svg width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="#3b82f6" fill-opacity="0.2"/>
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M9 12l2 2 4-4" stroke="#1d4ed8" stroke-width="2"/>
+            </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-blue-800 mb-2">清廉守門員</h1>
+        <p class="text-gray-600 text-sm mb-6">左右滑動公務員，接住正義，避開誘惑！</p>
+        
+        <div class="flex w-full max-w-md gap-4 mb-8">
+            <!-- A區塊 (左) -->
+            <div class="flex-1 bg-green-50 rounded-xl p-3 border border-green-200 shadow-sm">
+                <div class="text-green-700 font-bold mb-2 text-sm border-b border-green-200 pb-1">加分項 (+)</div>
+                <div class="grid grid-cols-2 gap-2 text-2xl">
+                    <span>📜</span><span>⚖️</span>
+                    <span>☀️</span><span>📞</span>
+                    <span class="col-span-2 text-center">👍</span>
+                </div>
+            </div>
+            <!-- B區塊 (右) -->
+            <div class="flex-1 bg-red-50 rounded-xl p-3 border border-red-200 shadow-sm">
+                <div class="text-red-700 font-bold mb-2 text-sm border-b border-red-200 pb-1">扣分項 (-)</div>
+                <div class="grid grid-cols-2 gap-2 text-2xl">
+                    <span>🧧</span><span>🍾</span>
+                    <span>💵</span><span>🎁</span>
+                    <span class="col-span-2 text-center">💰</span>
+                </div>
+            </div>
+        </div>
+
+        <button id="start-btn" class="bg-blue-600 text-white text-xl font-bold py-4 px-12 rounded-full shadow-lg hover:bg-blue-700 active:scale-95 transition-all">
+            開始挑戰
+        </button>
+        <!-- 修改署名為 臺南市政府政風處 -->
+        <p class="mt-4 text-[10px] text-gray-400">臺南市政府政風處 關心您</p>
+    </div>
+
+    <!-- End Screen -->
+    <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex-col items-center p-6 text-center overflow-y-auto">
+        <div id="result-status" class="text-3xl font-black mb-4 mt-8"></div>
+        <div class="text-gray-500 text-sm">您的得分</div>
+        <div class="text-6xl font-black text-blue-600 mb-4" id="final-score">0</div>
+        <p id="result-comment" class="text-lg font-bold text-gray-800 mb-8 px-4"></p>
+        
+        <!-- 法條宣導語 (三段式) -->
+        <div class="grid grid-cols-3 gap-2 w-full mb-8 text-[11px] leading-tight text-gray-700 border-y border-gray-100 py-6 bg-gray-50/50 rounded-xl px-2">
+            <div class="px-1 border-r border-gray-200 flex items-center justify-center">
+                「送錢給公務員關說？小心觸犯行賄罪！」
+            </div>
+            <div class="px-1 border-r border-gray-200 flex items-center justify-center">
+                「公務員依法行政是本分，最好的禮物是您的稱讚，廉能政府從『不送禮』開始。」
+            </div>
+            <div class="px-1 flex items-center justify-center">
+                「您的監督是貪腐的救星！發現公務員索賄，請撥 0800-286-586」。
+            </div>
+        </div>
+
+        <!-- 條件式領獎訊息 -->
+        <div id="prize-message" class="text-blue-700 font-bold mb-8 px-4 py-3 bg-blue-50 rounded-lg w-full max-w-sm"></div>
+
+        <button onclick="location.reload()" class="bg-gray-800 text-white font-bold py-3 px-10 rounded-full hover:bg-gray-700 transition-colors">
+            返回首頁
+        </button>
+    </div>
+
+    <div id="flash-overlay"></div>
+
+    <!-- 遊戲中角色：可愛公務員 -->
+    <div id="player">
+        <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
+            <rect x="25" y="60" width="50" height="40" rx="15" fill="#3b82f6" />
+            <path d="M45 60 L50 75 L55 60" fill="white" />
+            <path d="M48 75 L50 90 L52 75" fill="#1d4ed8" />
+            <circle cx="50" cy="35" r="30" fill="#FFD1BA" />
+            <circle cx="40" cy="30" r="3" fill="#333" />
+            <circle cx="60" cy="30" r="3" fill="#333" />
+            <path d="M42 45 Q50 52 58 45" stroke="#333" stroke-width="2" fill="none" />
+            <rect x="20" y="80" width="60" height="18" rx="4" fill="rgba(0,0,0,0.5)" />
+            <text x="50" y="93" text-anchor="middle" fill="white" font-size="10" font-weight="bold">公務員</text>
+        </svg>
+    </div>
+</div>
+
+<script>
+    const gameContainer = document.getElementById('game-container');
+    const player = document.getElementById('player');
+    const scoreElement = document.getElementById('score');
+    const timerElement = document.getElementById('timer');
+    const startScreen = document.getElementById('start-screen');
+    const endScreen = document.getElementById('end-screen');
+    const finalScoreElement = document.getElementById('final-score');
+    const resultStatus = document.getElementById('result-status');
+    const resultComment = document.getElementById('result-comment');
+    const prizeMessage = document.getElementById('prize-message');
+    const flashOverlay = document.getElementById('flash-overlay');
+
+    let score = 0;
+    let timeLeft = 20;
+    let gameActive = false;
+    let playerX = window.innerWidth / 2 - 40;
+    let items = [];
+    let gameLoop;
+
+    const config = {
+        good: [
+            { icon: '📜', pts: 10 }, 
+            { icon: '⚖️', pts: 10 }, 
+            { icon: '☀️', pts: 10 }, 
+            { icon: '📞', pts: 15 }, 
+            { icon: '👍', pts: 10 }  
+        ],
+        bad: [
+            { icon: '🧧', pts: -20 }, 
+            { icon: '🍾', pts: -15 }, 
+            { icon: '💵', pts: -20 }, 
+            { icon: '🎁', pts: -15 }, 
+            { icon: '💰', pts: -30 }  
+        ]
+    };
+
+    player.style.left = `${playerX}px`;
+
+    gameContainer.addEventListener('touchmove', (e) => {
+        if (!gameActive) return;
+        const touchX = e.touches[0].clientX;
+        playerX = touchX - 40;
+        if (playerX < 0) playerX = 0;
+        if (playerX > window.innerWidth - 80) playerX = window.innerWidth - 80;
+        player.style.left = `${playerX}px`;
+    });
+
+    document.getElementById('start-btn').addEventListener('click', () => {
+        startScreen.classList.add('hidden');
+        gameActive = true;
+        startGame();
+    });
+
+    function startGame() {
+        score = 0;
+        timeLeft = 20;
+        scoreElement.innerText = score;
+        timerElement.innerText = timeLeft;
+
+        const timerInterval = setInterval(() => {
+            if (!gameActive) {
+                clearInterval(timerInterval);
+                return;
+            }
+            timeLeft--;
+            timerElement.innerText = timeLeft;
+            if (timeLeft <= 0) endGame();
+        }, 1000);
+
+        gameLoop = setInterval(() => {
+            if (gameActive) spawnItem();
+            updateItems();
+        }, 30);
+    }
+
+    function spawnItem() {
+        if (Math.random() < 0.07) {
+            const isGood = Math.random() > 0.45;
+            const itemConfig = isGood 
+                ? config.good[Math.floor(Math.random() * config.good.length)]
+                : config.bad[Math.floor(Math.random() * config.bad.length)];
+
+            const itemEl = document.createElement('div');
+            itemEl.className = 'falling-item';
+            itemEl.innerText = itemConfig.icon;
+            itemEl.style.left = Math.random() * (window.innerWidth - 45) + 'px';
+            itemEl.style.top = '-50px';
+            
+            const itemObj = {
+                el: itemEl,
+                config: itemConfig,
+                y: -50,
+                speed: 2.5 + Math.random() * 2 + (20 - timeLeft) * 0.1 
+            };
+
+            gameContainer.appendChild(itemEl);
+            items.push(itemObj);
+        }
+    }
+
+    function updateItems() {
+        const playerRect = player.getBoundingClientRect();
+        const pBufferX = 15;
+        const pBufferY = 10;
+
+        for (let i = items.length - 1; i >= 0; i--) {
+            const item = items[i];
+            item.y += item.speed;
+            item.el.style.top = item.y + 'px';
+
+            const itemRect = item.el.getBoundingClientRect();
+
+            if (
+                itemRect.bottom - 5 > playerRect.top + pBufferY &&
+                itemRect.top + 5 < playerRect.bottom - pBufferY &&
+                itemRect.right - 5 > playerRect.left + pBufferX &&
+                itemRect.left + 5 < playerRect.right - pBufferX
+            ) {
+                collectItem(item);
+                items.splice(i, 1);
+                continue;
+            }
+
+            if (item.y > window.innerHeight) {
+                item.el.remove();
+                items.splice(i, 1);
+            }
+        }
+    }
+
+    function collectItem(item) {
+        const pts = item.config.pts;
+        score += pts;
+        if (score < 0) score = 0;
+        scoreElement.innerText = score;
+
+        const floating = document.createElement('div');
+        floating.className = 'floating-text text-xl';
+        floating.innerText = pts > 0 ? `+${pts}` : pts;
+        floating.style.color = pts > 0 ? '#16a34a' : '#dc2626';
+        floating.style.left = (parseFloat(item.el.style.left) + 10) + 'px';
+        floating.style.top = (player.offsetTop - 20) + 'px';
+        gameContainer.appendChild(floating);
+        setTimeout(() => floating.remove(), 1000);
+
+        if (pts < 0) flashRed();
+        item.el.remove();
+    }
+
+    function flashRed() {
+        flashOverlay.style.display = 'block';
+        setTimeout(() => flashOverlay.style.display = 'none', 100);
+    }
+
+    function endGame() {
+        gameActive = false;
+        clearInterval(gameLoop);
+        items.forEach(it => it.el.remove());
+        items = [];
+
+        finalScoreElement.innerText = score;
+        
+        if (score >= 85) {
+            resultStatus.innerText = "挑戰成功";
+            resultStatus.className = "text-3xl font-black mb-4 mt-8 text-green-600";
+            resultComment.innerText = "「清廉大師！您是社會誠信的典範！」";
+            // 修改後的領獎文字
+            prizeMessage.innerText = "請向工作人員出示此畫面領取宣導品";
+        } else if (score >= 60) {
+            resultStatus.innerText = "挑戰成功";
+            resultStatus.className = "text-3xl font-black mb-4 mt-8 text-blue-600";
+            resultComment.innerText = "「廉潔衛士！表現不錯，再接再厲！」";
+            prizeMessage.innerText = "請務必再試一次，廉能政府仰賴您的協助";
+        } else {
+            resultStatus.innerText = "挑戰失敗";
+            resultStatus.className = "text-3xl font-black mb-4 mt-8 text-red-600";
+            resultComment.innerText = "「誠信警報！別被紅包絆倒囉。」";
+            prizeMessage.innerText = "請務必再試一次，廉能政府仰賴您的協助";
+        }
+
+        endScreen.classList.remove('hidden');
+        endScreen.classList.add('flex');
+    }
+</script>
+
+</body>
+</html>
