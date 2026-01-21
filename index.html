@@ -87,28 +87,24 @@
     <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex flex-col items-center p-4 text-center overflow-y-auto overflow-x-hidden">
         <div id="result-status" class="text-3xl font-black mb-2 mt-4 relative z-40"></div>
         
-        <!-- 💡 專業佈局核心：橫向不溢出方案 (位置已互換) -->
+        <!-- 分數與角色的橫向排列 (木瓜最左，芭樂最右) -->
         <div class="flex items-end justify-center w-full max-w-full mb-1 relative z-10 scale-90 sm:scale-100 origin-bottom">
-            <!-- 左側 2 隻：木瓜換到最左 (259898.jpg) -->
             <div class="flex items-end -space-x-12 sm:-space-x-16">
                 <img src="259898.jpg" class="character-img w-28 sm:w-32" alt="L1">
                 <img src="1000045678.jpg" class="character-img w-32 sm:w-36" style="animation-delay: 0.5s;" alt="L2">
             </div>
             
-            <!-- 中間分數 -->
             <div class="flex flex-col items-center justify-end px-1 pb-2 z-20">
                 <div class="text-gray-500 text-[10px] font-black uppercase tracking-tighter leading-none mb-1">您的最終得分</div>
                 <div id="final-score-display" class="text-6xl font-black text-blue-600 tracking-tighter leading-none">0</div>
             </div>
             
-            <!-- 右側 2 隻：芭樂換到最右 (1000045680.jpg) -->
             <div class="flex items-end -space-x-12 sm:-space-x-16">
                 <img src="1000045682.jpg" class="character-img w-32 sm:w-36" style="animation-delay: 1s;" alt="R1">
                 <img src="1000045680.jpg" class="character-img w-28 sm:w-32" style="animation-delay: 1.5s;" alt="R2">
             </div>
         </div>
 
-        <!-- 評語列 -->
         <p id="result-comment" class="text-lg font-bold text-gray-800 mb-6 px-4 leading-tight relative z-40 border-t border-gray-100 pt-3 w-full max-w-sm"></p>
 
         <!-- 排行榜互動區 -->
@@ -138,10 +134,17 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-2 w-full mb-6 text-[10px] text-gray-600 border-y py-4 bg-gray-50/80 px-2 rounded-xl relative z-40 text-center">
-            <div class="px-1 border-r flex items-center justify-center font-bold font-black italic">「送錢關說？<br>觸犯行賄罪！」</div>
-            <div class="px-1 border-r flex items-center justify-center font-bold font-black italic">「最好的禮物是讚美，<br>廉能政府不送禮。」</div>
-            <div class="px-1 flex items-center justify-center font-bold font-black italic">「檢舉公務員索賄，<br>請撥 0800-286-586」。</div>
+        <!-- 下方 3 則宣導語 (更新第二則換行位置) -->
+        <div class="grid grid-cols-3 gap-2 w-full mb-6 text-[10px] text-gray-600 border-y py-4 bg-gray-50/80 px-2 rounded-xl relative z-40 text-center leading-relaxed">
+            <div class="px-1 border-r flex items-center justify-center font-black italic">
+                「送錢給公務員，<br>小心觸犯行賄罪！」
+            </div>
+            <div class="px-1 border-r flex items-center justify-center font-black italic">
+                「對公務員最好的禮物<br>是稱讚，<br>而不是送禮」
+            </div>
+            <div class="px-1 flex items-center justify-center font-black italic">
+                「發現公務員索賄，<br>請撥 0800-286-586」
+            </div>
         </div>
 
         <div id="prize-message" class="text-blue-700 font-black mb-6 px-4 py-4 bg-yellow-50 border border-yellow-200 rounded-xl w-full max-sm text-sm shadow-sm relative z-40"></div>
@@ -153,6 +156,7 @@
 
     <div id="flash-overlay"></div>
 
+    <!-- 角色：公務員 -->
     <div id="player">
         <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
             <rect x="25" y="60" width="50" height="40" rx="15" fill="#3b82f6" />
