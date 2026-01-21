@@ -22,7 +22,7 @@
         #leaderboard-list::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; border: 2px solid #f1f5f9; }
         #leaderboard-list { scrollbar-width: thin; scrollbar-color: #3b82f6 #f1f5f9; }
 
-        /* 角色圖片動畫樣式 */
+        /* 角色圖片動畫與適應性樣式 */
         .character-img {
             pointer-events: none;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
@@ -32,7 +32,7 @@
         }
         @keyframes mascotFloat {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
+            50% { transform: translateY(-12px); }
         }
     </style>
 </head>
@@ -84,31 +84,31 @@
     </div>
 
     <!-- 結算畫面 -->
-    <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex flex-col items-center p-4 text-center overflow-y-auto">
+    <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex flex-col items-center p-4 text-center overflow-y-auto overflow-x-hidden">
         <div id="result-status" class="text-3xl font-black mb-2 mt-4 relative z-40"></div>
         
-        <!-- 💡 專業佈局優化：分數置中，左右各二角色對稱排列 -->
-        <div class="flex items-end justify-center w-full mb-1 relative z-10">
-            <!-- 左側 2 隻：透過負間距呈現層次感 -->
-            <div class="flex items-end -space-x-8">
-                <img src="1000045680.jpg" class="character-img w-24 sm:w-32" alt="L1">
-                <img src="1000045678.jpg" class="character-img w-28 sm:w-36" style="animation-delay: 0.5s;" alt="L2">
+        <!-- 💡 專業佈局核心：橫向不溢出方案 -->
+        <div class="flex items-end justify-center w-full max-w-full mb-1 relative z-10 scale-90 sm:scale-100 origin-bottom">
+            <!-- 左側 2 隻：深度疊加 (-space-x-12) 以騰出空間 -->
+            <div class="flex items-end -space-x-12 sm:-space-x-16">
+                <img src="1000045680.jpg" class="character-img w-28 sm:w-32" alt="L1">
+                <img src="1000045678.jpg" class="character-img w-32 sm:w-36" style="animation-delay: 0.5s;" alt="L2">
             </div>
             
-            <!-- 中間分數：增加左右間距防止遮擋 -->
-            <div class="flex flex-col items-center justify-end px-4 pb-2 z-20">
-                <div class="text-gray-500 text-xs font-black uppercase tracking-widest leading-none mb-1">您的最終得分</div>
-                <div id="final-score-display" class="text-7xl font-black text-blue-600 tracking-tighter leading-none">0</div>
+            <!-- 中間分數：減少 padding (px-1) 讓角色向中心靠攏 -->
+            <div class="flex flex-col items-center justify-end px-1 pb-2 z-20">
+                <div class="text-gray-500 text-[10px] font-black uppercase tracking-tighter leading-none mb-1">您的最終得分</div>
+                <div id="final-score-display" class="text-6xl font-black text-blue-600 tracking-tighter leading-none">0</div>
             </div>
             
-            <!-- 右側 2 隻：對稱負間距 -->
-            <div class="flex items-end -space-x-8">
-                <img src="1000045682.jpg" class="character-img w-28 sm:w-36" style="animation-delay: 1s;" alt="R1">
-                <img src="259898.jpg" class="character-img w-24 sm:w-32" style="animation-delay: 1.5s;" alt="R2">
+            <!-- 右側 2 隻：深度疊加 -->
+            <div class="flex items-end -space-x-12 sm:-space-x-16">
+                <img src="1000045682.jpg" class="character-img w-32 sm:w-36" style="animation-delay: 1s;" alt="R1">
+                <img src="259898.jpg" class="character-img w-28 sm:w-32" style="animation-delay: 1.5s;" alt="R2">
             </div>
         </div>
 
-        <!-- 評語列：其頂部與角色底部對齊 -->
+        <!-- 評語列：頂部與角色底部對齊 -->
         <p id="result-comment" class="text-lg font-bold text-gray-800 mb-6 px-4 leading-tight relative z-40 border-t border-gray-100 pt-3 w-full max-w-sm"></p>
 
         <!-- 排行榜互動區 -->
@@ -125,7 +125,6 @@
             </div>
             
             <div id="rank-display" class="hidden relative">
-                <!-- 排行榜排名：移除重複的角色圖案 -->
                 <div class="text-blue-700 font-black text-2xl mb-4 italic underline underline-offset-4 tracking-tighter text-center">
                     全台總排名：第 <span id="user-rank"></span> 名
                 </div>
@@ -141,14 +140,12 @@
 
         <div class="grid grid-cols-3 gap-2 w-full mb-6 text-[10px] text-gray-600 border-y py-4 bg-gray-50/80 px-2 rounded-xl relative z-40 text-center">
             <div class="px-1 border-r flex items-center justify-center font-bold font-black italic">「送錢關說？<br>觸犯行賄罪！」</div>
-            <div class="px-1 border-r flex items-center justify-center text-center font-bold font-black italic">「最好的禮物是讚美，<br>廉能政府不送禮。」</div>
+            <div class="px-1 border-r flex items-center justify-center font-bold font-black italic">「最好的禮物是讚美，<br>廉能政府不送禮。」</div>
             <div class="px-1 flex items-center justify-center font-bold font-black italic">「檢舉公務員索賄，<br>請撥 0800-286-586」。</div>
         </div>
 
-        <!-- 一般領獎提示文字區塊 -->
         <div id="prize-message" class="text-blue-700 font-black mb-6 px-4 py-4 bg-yellow-50 border border-yellow-200 rounded-xl w-full max-sm text-sm shadow-sm relative z-40"></div>
         
-        <!-- 重玩/繼續挑戰按鈕 -->
         <button id="final-restart-btn" onclick="location.reload()" class="w-full max-w-sm bg-gray-800 text-white font-black py-4 px-6 rounded-full shadow-lg active:scale-95 transition-all mb-10 text-center leading-tight text-lg relative z-40">
             再玩一次
         </button>
@@ -156,7 +153,6 @@
 
     <div id="flash-overlay"></div>
 
-    <!-- 遊戲中移動的角色 -->
     <div id="player">
         <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
             <rect x="25" y="60" width="50" height="40" rx="15" fill="#3b82f6" />
@@ -331,7 +327,8 @@
     }
 
     function endGame() {
-        gameActive = false; clearInterval(timerInt); clearInterval(gameInt);
+        gameActive = false;
+        clearInterval(timerInt); clearInterval(gameInt);
         items.forEach(it => it.el.remove()); items = [];
         finalScoreDisplay.innerText = score;
         if(score >= 250) { 
