@@ -22,16 +22,17 @@
         #leaderboard-list::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; border: 2px solid #f1f5f9; }
         #leaderboard-list { scrollbar-width: thin; scrollbar-color: #3b82f6 #f1f5f9; }
 
-        /* 專業角色定位樣式 - 改為非絕對定位以利於同行排列 */
+        /* 角色圖片動畫樣式 */
         .character-img {
             pointer-events: none;
-            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
+            filter: drop-shadow(0 8px 12px rgba(0,0,0,0.12));
             animation: mascotFloat 4s ease-in-out infinite;
-            display: block;
+            flex-shrink: 0;
+            object-fit: contain;
         }
         @keyframes mascotFloat {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
@@ -72,7 +73,7 @@
         <p class="mt-4 text-[10px] text-gray-400 font-bold">臺南市政府政風處團隊</p>
     </div>
 
-    <!-- 凍結提示 -->
+    <!-- 暫停警示 -->
     <div id="alert-screen" class="absolute inset-0 bg-black/60 z-50 hidden flex flex-col items-center justify-center p-6 text-center">
         <div class="bg-white rounded-3xl p-8 shadow-2xl max-w-sm w-full">
             <div class="text-5xl mb-6">🚫</div>
@@ -83,36 +84,33 @@
     </div>
 
     <!-- 結算畫面 -->
-    <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex flex-col items-center p-6 text-center overflow-y-auto">
-        <div id="result-status" class="text-3xl font-black mb-6 mt-4 relative z-40"></div>
+    <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex flex-col items-center p-4 text-center overflow-y-auto">
+        <div id="result-status" class="text-3xl font-black mb-2 mt-4 relative z-40"></div>
         
-        <!-- 💡 專業設計：分數同行的角色排列 (左2、分數、右2) -->
-        <div class="flex items-center justify-center gap-2 mb-6 w-full max-w-lg relative z-40">
-            <!-- 左側 2 隻 -->
-            <div class="flex gap-1">
-                <img src="1000045680.jpg" class="character-img w-20 sm:w-24" alt="mascot">
-                <img src="1000045678.jpg" class="character-img w-20 sm:w-24" style="animation-delay: 0.5s;" alt="mascot">
+        <!-- 分數與四個角色的橫向排列 (保留於此) -->
+        <div class="flex items-end justify-center w-full max-w-full overflow-hidden mb-2 relative z-10 px-1">
+            <div class="flex items-end -space-x-8 flex-shrink-0">
+                <img src="1000045680.jpg" class="character-img w-20 sm:w-28" alt="L1">
+                <img src="1000045678.jpg" class="character-img w-24 sm:w-32" style="animation-delay: 0.5s;" alt="L2">
             </div>
             
-            <!-- 中間得分 -->
-            <div class="flex flex-col items-center px-4">
-                <div class="text-gray-500 text-xs font-bold uppercase tracking-widest">您的最終得分</div>
-                <div id="final-score-display" class="text-6xl font-black text-blue-600 tracking-tighter">0</div>
+            <div class="flex flex-col items-center justify-end px-2 pb-2 z-20 bg-white/50 rounded-lg">
+                <div class="text-gray-500 text-[10px] font-bold uppercase tracking-tighter">您的最終得分</div>
+                <div id="final-score-display" class="text-6xl font-black text-blue-600 tracking-tighter leading-none">0</div>
             </div>
             
-            <!-- 右側 2 隻 -->
-            <div class="flex gap-1">
-                <img src="1000045682.jpg" class="character-img w-20 sm:w-24" style="animation-delay: 1s;" alt="mascot">
-                <img src="259898.jpg" class="character-img w-20 sm:w-24" style="animation-delay: 1.5s;" alt="mascot">
+            <div class="flex items-end -space-x-8 flex-shrink-0">
+                <img src="1000045682.jpg" class="character-img w-24 sm:w-32" style="animation-delay: 1s;" alt="R1">
+                <img src="259898.jpg" class="character-img w-20 sm:w-28" style="animation-delay: 1.5s;" alt="R2">
             </div>
         </div>
 
-        <p id="result-comment" class="text-lg font-bold text-gray-800 mb-6 px-4 leading-tight relative z-40"></p>
+        <p id="result-comment" class="text-lg font-bold text-gray-800 mb-6 px-4 leading-tight relative z-40 border-t pt-2 w-full"></p>
 
         <!-- 排行榜互動區 -->
-        <div id="leaderboard-section" class="w-full max-w-sm bg-blue-50/80 backdrop-blur rounded-2xl p-5 mb-6 border border-blue-100 shadow-inner relative z-50">
+        <div id="leaderboard-section" class="w-full max-w-sm bg-blue-50/80 backdrop-blur rounded-2xl p-5 mb-6 border border-blue-100 shadow-inner relative z-50 text-center">
             <div id="upload-form">
-                <p class="text-sm font-black text-blue-800 mb-4 tracking-tight text-center">🏆 挑戰全國誠信榮譽排行榜</p>
+                <p class="text-sm font-black text-blue-800 mb-4 tracking-tight">🏆 挑戰全國誠信榮譽排行榜</p>
                 <div class="space-y-3">
                     <input type="text" id="nickname" placeholder="請輸入暱稱 (8字內)" maxlength="8" class="w-full px-4 py-3 rounded-xl border border-blue-100 shadow-sm font-bold text-center outline-none focus:ring-2 focus:ring-blue-400 bg-white">
                     <button id="submit-btn" class="w-full bg-blue-600 text-white py-3.5 rounded-xl font-black text-lg shadow-lg active:translate-y-1 transition-all">
@@ -123,17 +121,9 @@
             </div>
             
             <div id="rank-display" class="hidden relative">
-                <!-- 💡 專業設計：排行榜同行的角色排列 (左2、排名、右2) -->
-                <div class="flex items-center justify-center gap-1 mb-4 w-full">
-                    <img src="1000045680.jpg" class="character-img w-12" alt="mascot">
-                    <img src="1000045678.jpg" class="character-img w-12" style="animation-delay: 0.5s;" alt="mascot">
-                    
-                    <div class="text-blue-700 font-black text-xl italic underline underline-offset-4 tracking-tighter text-center px-1">
-                        全台總排名：第 <span id="user-rank"></span> 名
-                    </div>
-
-                    <img src="1000045682.jpg" class="character-img w-12" style="animation-delay: 1s;" alt="mascot">
-                    <img src="259898.jpg" class="character-img w-12" style="animation-delay: 1.5s;" alt="mascot">
+                <!-- 💡 修正：移除此處原本圍繞在排名左右的四隻角色圖片 -->
+                <div class="text-blue-700 font-black text-2xl mb-4 italic underline underline-offset-4 tracking-tighter text-center">
+                    全台總排名：第 <span id="user-rank"></span> 名
                 </div>
                 
                 <div id="rank-prize-msg" class="hidden bg-yellow-100 text-blue-900 font-black py-2 px-3 rounded-xl text-xs mb-3 shadow-sm border border-yellow-200 animate-pulse">
@@ -141,7 +131,7 @@
                 </div>
 
                 <p class="text-[10px] text-gray-400 mb-2 font-bold text-center italic">↓ 拖動右側滑軸查看完整名單 ↓</p>
-                <div class="text-left bg-white rounded-xl p-3 shadow-inner space-y-1 h-[240px] overflow-y-scroll border border-blue-50 text-sm mb-0" id="leaderboard-list"></div>
+                <div class="text-left bg-white/90 rounded-xl p-3 shadow-inner space-y-1 h-[240px] overflow-y-scroll border border-blue-50 text-sm mb-0" id="leaderboard-list"></div>
             </div>
         </div>
 
@@ -151,8 +141,10 @@
             <div class="px-1 flex items-center justify-center font-bold font-black italic">「檢舉公務員索賄，<br>請撥 0800-286-586」。</div>
         </div>
 
+        <!-- 一般領獎提示文字區塊 -->
         <div id="prize-message" class="text-blue-700 font-black mb-6 px-4 py-4 bg-yellow-50 border border-yellow-200 rounded-xl w-full max-sm text-sm shadow-sm relative z-40"></div>
         
+        <!-- 重玩/繼續挑戰按鈕 -->
         <button id="final-restart-btn" onclick="location.reload()" class="w-full max-w-sm bg-gray-800 text-white font-black py-4 px-6 rounded-full shadow-lg active:scale-95 transition-all mb-10 text-center leading-tight text-lg relative z-40">
             再玩一次
         </button>
@@ -176,7 +168,7 @@
 </div>
 
 <script>
-    // 請在此處更換為您的 Google Apps Script URL
+    // 請填入您的 Google Apps Script URL
     const scriptURL = "https://script.google.com/macros/s/AKfycbyV0cPrTrmYdsr77GVq7CgcEXljBhIIJuy-b1EkwLoXS5vcvu-MwfSUJAgOvBHxVMcQRg/exec";
 
     const player = document.getElementById('player');
@@ -214,7 +206,12 @@
 
     const handleMove = (x) => { if (!gameActive) return; playerX = Math.max(0, Math.min(x - 40, window.innerWidth - 80)); player.style.left = playerX + 'px'; };
     gameContainer.addEventListener('mousemove', (e) => handleMove(e.clientX));
-    gameContainer.addEventListener('touchmove', (e) => { if (gameActive) { handleMove(e.touches[0].clientX); if (e.cancelable) e.preventDefault(); } }, { passive: false });
+    gameContainer.addEventListener('touchmove', (e) => {
+        if (gameActive) {
+            handleMove(e.touches[0].clientX);
+            if (e.cancelable) e.preventDefault();
+        }
+    }, { passive: false });
 
     document.getElementById('start-btn').onclick = () => { startScreen.classList.add('hidden'); gameActive = true; startIntervals(); };
     
