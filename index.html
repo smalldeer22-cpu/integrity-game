@@ -32,7 +32,7 @@
         }
         @keyframes mascotFloat {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-12px); }
+            50% { transform: translateY(-10px); }
         }
     </style>
 </head>
@@ -87,28 +87,28 @@
     <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex flex-col items-center p-4 text-center overflow-y-auto overflow-x-hidden">
         <div id="result-status" class="text-3xl font-black mb-2 mt-4 relative z-40"></div>
         
-        <!-- 💡 專業佈局核心：橫向不溢出方案 -->
+        <!-- 💡 專業佈局核心：橫向不溢出方案 (位置已互換) -->
         <div class="flex items-end justify-center w-full max-w-full mb-1 relative z-10 scale-90 sm:scale-100 origin-bottom">
-            <!-- 左側 2 隻：深度疊加 (-space-x-12) 以騰出空間 -->
+            <!-- 左側 2 隻：木瓜換到最左 (259898.jpg) -->
             <div class="flex items-end -space-x-12 sm:-space-x-16">
-                <img src="1000045680.jpg" class="character-img w-28 sm:w-32" alt="L1">
+                <img src="259898.jpg" class="character-img w-28 sm:w-32" alt="L1">
                 <img src="1000045678.jpg" class="character-img w-32 sm:w-36" style="animation-delay: 0.5s;" alt="L2">
             </div>
             
-            <!-- 中間分數：減少 padding (px-1) 讓角色向中心靠攏 -->
+            <!-- 中間分數 -->
             <div class="flex flex-col items-center justify-end px-1 pb-2 z-20">
                 <div class="text-gray-500 text-[10px] font-black uppercase tracking-tighter leading-none mb-1">您的最終得分</div>
                 <div id="final-score-display" class="text-6xl font-black text-blue-600 tracking-tighter leading-none">0</div>
             </div>
             
-            <!-- 右側 2 隻：深度疊加 -->
+            <!-- 右側 2 隻：芭樂換到最右 (1000045680.jpg) -->
             <div class="flex items-end -space-x-12 sm:-space-x-16">
                 <img src="1000045682.jpg" class="character-img w-32 sm:w-36" style="animation-delay: 1s;" alt="R1">
-                <img src="259898.jpg" class="character-img w-28 sm:w-32" style="animation-delay: 1.5s;" alt="R2">
+                <img src="1000045680.jpg" class="character-img w-28 sm:w-32" style="animation-delay: 1.5s;" alt="R2">
             </div>
         </div>
 
-        <!-- 評語列：頂部與角色底部對齊 -->
+        <!-- 評語列 -->
         <p id="result-comment" class="text-lg font-bold text-gray-800 mb-6 px-4 leading-tight relative z-40 border-t border-gray-100 pt-3 w-full max-w-sm"></p>
 
         <!-- 排行榜互動區 -->
