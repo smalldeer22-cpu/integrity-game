@@ -14,7 +14,12 @@
             font-family: sans-serif; 
             -webkit-user-select: none; 
             user-select: none;
-            -webkit-touch-callout: none; /* 禁止 iOS 長按彈出選單 */
+            /* 💡 高強度防護：禁止 iOS 長按選單、禁止選取文字、禁止呼叫系統功能 */
+            -webkit-touch-callout: none;
+            -webkit-user-drag: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         #game-container { 
@@ -23,21 +28,22 @@
             height: 100vh; 
             background: linear-gradient(to bottom, #7dd3fc, #e0f2fe); 
             overflow: hidden;
-            transition: filter 0.3s ease; /* 用於切換視窗時的模糊效果 */
+            transition: opacity 0.1s ease; /* 💡 快速反應 */
         }
 
-        /* 💡 截圖與列印保護：列印時隱藏所有內容 */
+        /* 💡 截圖保護：列印或呼叫預覽時隱藏所有內容 */
         @media print {
             body { display: none !important; }
-            #game-container { display: none !important; }
         }
 
-        /* 當視窗失去焦點時的模糊類別 */
-        .window-blur {
-            filter: blur(20px) grayscale(100%);
+        /* 當視窗失去焦點（截圖前兆）時的極度模糊與變黑 */
+        .window-privacy {
+            opacity: 0 !important;
+            filter: blur(50px);
+            pointer-events: none;
         }
 
-        /* 原有遊戲元件樣式 */
+        /* 遊戲元件樣式 */
         #player { position: absolute; bottom: 40px; width: 80px; height: 80px; transition: left 0.05s linear; z-index: 10; pointer-events: none; }
         .falling-item { position: absolute; width: 45px; height: 45px; z-index: 5; display: flex; align-items: center; justify-content: center; pointer-events: none; }
         #flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.3); display: none; pointer-events: none; z-index: 50; }
@@ -46,13 +52,11 @@
         .timer-warning { color: #ef4444 !important; animation: pulse 1s infinite; }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        /* 排行榜自定義滑軸 */
         #leaderboard-list::-webkit-scrollbar { width: 8px; }
         #leaderboard-list::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
         #leaderboard-list::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; border: 2px solid #f1f5f9; }
         #leaderboard-list { scrollbar-width: thin; scrollbar-color: #3b82f6 #f1f5f9; }
 
-        /* 角色圖片動畫樣式 */
         .character-img {
             pointer-events: none;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
@@ -65,11 +69,11 @@
             50% { transform: translateY(-12px); }
         }
 
-        /* 💡 安全遮罩提示 */
+        /* 安全遮罩 */
         #security-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.9);
+            background: #000;
             color: white;
             display: none;
             flex-direction: column;
@@ -81,13 +85,13 @@
         }
     </style>
 </head>
-<body oncontextmenu="return false;"> <!-- 💡 禁止右鍵 -->
+<body oncontextmenu="return false;">
 
-<!-- 安全遮罩 (當偵測到可能截圖行為時顯示) -->
+<!-- 當偵測到離開畫面或截圖時顯示 -->
 <div id="security-overlay">
-    <div class="text-6xl mb-6">🔒</div>
-    <h2 class="text-2xl font-bold mb-4">安全防護啟動</h2>
-    <p>為保護資訊安全與宣導內容，本遊戲禁止截圖功能。<br>請回到遊戲畫面繼續挑戰。</p>
+    <div class="text-7xl mb-8">🚫</div>
+    <h2 class="text-3xl font-black mb-4">內容受保護</h2>
+    <p class="text-gray-400 text-lg">為配合廉政宣導活動規範，<br>本遊戲已啟動防截圖機制。<br><br>請回到遊戲畫面繼續挑戰。</p>
 </div>
 
 <div id="game-container">
@@ -139,7 +143,7 @@
     <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex flex-col items-center p-4 text-center overflow-y-auto overflow-x-hidden">
         <div id="result-status" class="text-3xl font-black mb-2 mt-4 relative z-40"></div>
         
-        <!-- 專業佈局核心：分數與角色橫向排列 (木瓜最左，芭樂最右) -->
+        <!-- 角色水平佈局 -->
         <div class="flex items-end justify-center w-full max-w-full mb-1 relative z-10 scale-90 sm:scale-100 origin-bottom">
             <div class="flex items-end -space-x-12 sm:-space-x-16">
                 <img src="259898.jpg" class="character-img w-28 sm:w-32" alt="L1">
@@ -159,7 +163,7 @@
 
         <p id="result-comment" class="text-lg font-bold text-gray-800 mb-6 px-4 leading-tight relative z-40 border-t border-gray-100 pt-3 w-full max-w-sm"></p>
 
-        <!-- 排行榜互動區 -->
+        <!-- 排行榜區 -->
         <div id="leaderboard-section" class="w-full max-w-sm bg-blue-50/80 backdrop-blur rounded-2xl p-5 mb-6 border border-blue-100 shadow-inner relative z-50 text-center">
             <div id="upload-form">
                 <p class="text-sm font-black text-blue-800 mb-4 tracking-tight">🏆 挑戰全國誠信榮譽排行榜</p>
@@ -186,6 +190,7 @@
             </div>
         </div>
 
+        <!-- 宣導語 -->
         <div class="grid grid-cols-3 gap-2 w-full mb-6 text-[10px] text-gray-600 border-y py-4 bg-gray-50/80 px-2 rounded-xl relative z-40 text-center leading-relaxed">
             <div class="px-1 border-r flex items-center justify-center font-black italic">
                 「送錢給公務員，<br>小心觸犯行賄罪！」
@@ -224,37 +229,48 @@
 <script>
     const scriptURL = "https://script.google.com/macros/s/AKfycbyV0cPrTrmYdsr77GVq7CgcEXljBhIIJuy-b1EkwLoXS5vcvu-MwfSUJAgOvBHxVMcQRg/exec";
 
-    // 💡 截圖防護邏輯 - 偵測視窗焦點與可見性
+    // 💡 加強版截圖防護邏輯
     const gameContainer = document.getElementById('game-container');
     const securityOverlay = document.getElementById('security-overlay');
 
-    // 1. 當使用者切換分頁或拉下控制中心時，模糊畫面防止截圖預覽
+    // 1. 偵測視窗失去焦點 (手機按下截圖組合鍵時通常會觸發 blur)
+    window.addEventListener('blur', () => {
+        gameContainer.classList.add('window-privacy');
+        securityOverlay.style.display = 'flex';
+    });
+
+    window.addEventListener('focus', () => {
+        gameContainer.classList.remove('window-privacy');
+        securityOverlay.style.display = 'none';
+    });
+
+    // 2. 偵測頁面可見度 (切換 App 或拉下狀態列時)
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-            gameContainer.classList.add('window-blur');
+            gameContainer.classList.add('window-privacy');
         } else {
-            gameContainer.classList.remove('window-blur');
+            gameContainer.classList.remove('window-privacy');
         }
     });
 
-    // 2. 當視窗失去焦點 (例如按下系統截圖快捷鍵)
-    window.addEventListener('blur', () => {
-        gameContainer.classList.add('window-blur');
-    });
-    window.addEventListener('focus', () => {
-        gameContainer.classList.remove('window-blur');
-    });
-
-    // 3. 攔截常用快捷鍵
+    // 3. 攔截常用截圖與功能快捷鍵
     window.addEventListener('keydown', (e) => {
-        // 攔截 Ctrl+P (列印), Ctrl+S (儲存), F12 (檢查)
-        if ((e.ctrlKey && (e.key === 'p' || e.key === 's')) || e.key === 'F12' || e.key === 'PrintScreen') {
+        if ((e.ctrlKey && (e.key === 'p' || e.key === 's' || e.key === 'a')) || 
+            e.key === 'F12' || e.key === 'PrintScreen' || (e.metaKey && e.shiftKey && e.key === '4')) {
             e.preventDefault();
+            gameContainer.classList.add('window-privacy');
             securityOverlay.style.display = 'flex';
-            setTimeout(() => { securityOverlay.style.display = 'none'; }, 2000);
+            setTimeout(() => { 
+                gameContainer.classList.remove('window-privacy');
+                securityOverlay.style.display = 'none';
+            }, 3000);
         }
     });
 
+    // 4. 禁止長按拖拽圖片 (行動裝置防護)
+    window.addEventListener('dragstart', (e) => e.preventDefault());
+
+    // --- 遊戲邏輯 ---
     const player = document.getElementById('player');
     const scoreElement = document.getElementById('score');
     const timerElement = document.getElementById('timer');
@@ -289,10 +305,8 @@
 
     const handleMove = (x) => { if (!gameActive) return; playerX = Math.max(0, Math.min(x - 40, window.innerWidth - 80)); player.style.left = playerX + 'px'; };
     
-    // 滑鼠與觸控移動
-    const activeGameContainer = document.getElementById('game-container');
-    activeGameContainer.addEventListener('mousemove', (e) => handleMove(e.clientX));
-    activeGameContainer.addEventListener('touchmove', (e) => {
+    gameContainer.addEventListener('mousemove', (e) => handleMove(e.clientX));
+    gameContainer.addEventListener('touchmove', (e) => {
         if (gameActive) {
             handleMove(e.touches[0].clientX);
             if (e.cancelable) e.preventDefault();
@@ -326,7 +340,7 @@
                 document.getElementById('upload-form').classList.add('hidden');
                 document.getElementById('rank-display').classList.remove('hidden');
                 document.getElementById('user-rank').innerText = data.userRank;
-                if (score >= 250) { rankPrizeMsg.classList.remove('hidden'); }
+                if (score >= 250) rankPrizeMsg.classList.remove('hidden');
                 prizeMessage.classList.add('hidden');
                 finalRestartBtn.innerText = "繼續挑戰佳績";
                 finalRestartBtn.classList.remove('bg-gray-800');
@@ -335,12 +349,10 @@
                 let displayRank = 1;
                 list.innerHTML = data.topList.map((e, idx) => {
                     if (idx > 0 && e.score < data.topList[idx-1].score) displayRank = idx + 1;
-                    return `
-                        <div class="flex justify-between items-center py-2.5 border-b border-blue-50 ${e.isUser ? 'bg-yellow-100 text-blue-800 font-black italic rounded px-2' : 'text-gray-600 px-2'}">
-                            <span class="flex gap-2 items-center"><span class="w-6 text-gray-400 font-bold text-xs">${displayRank}.</span><span class="font-bold">${e.name}</span></span>
-                            <span class="font-black text-blue-600">${e.score}分</span>
-                        </div>
-                    `;
+                    return `<div class="flex justify-between items-center py-2.5 border-b border-blue-50 ${e.isUser ? 'bg-yellow-100 text-blue-800 font-black italic rounded px-2' : 'text-gray-600 px-2'}">
+                        <span class="flex gap-2 items-center"><span class="w-6 text-gray-400 font-bold text-xs">${displayRank}.</span><span class="font-bold">${e.name}</span></span>
+                        <span class="font-black text-blue-600">${e.score}分</span>
+                    </div>`;
                 }).join('');
                 const userRow = list.querySelector('.bg-yellow-100');
                 if (userRow) { setTimeout(() => { userRow.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 500); }
@@ -400,7 +412,7 @@
     function showFloat(x, p) {
         const f = document.createElement('div'); f.className = 'floating-text text-xl'; f.innerText = p > 0 ? `+${p}` : p;
         f.style.color = p > 0 ? '#16a34a' : '#dc2626'; f.style.left = x; f.style.top = (player.offsetTop - 20) + 'px';
-        activeGameContainer.appendChild(f); setTimeout(() => f.remove(), 1000);
+        gameContainer.appendChild(f); setTimeout(() => f.remove(), 1000);
     }
 
     function flashRed() { flashOverlay.style.display = 'block'; setTimeout(() => flashOverlay.style.display = 'none', 100); }
@@ -411,8 +423,7 @@
     }
 
     function endGame() {
-        gameActive = false;
-        clearInterval(timerInt); clearInterval(gameInt);
+        gameActive = false; clearInterval(timerInt); clearInterval(gameInt);
         items.forEach(it => it.el.remove()); items = [];
         finalScoreDisplay.innerText = score;
         if(score >= 250) { 
