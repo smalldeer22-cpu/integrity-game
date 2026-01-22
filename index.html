@@ -6,8 +6,38 @@
     <title>清廉守門員 - 廉政宣導互動遊戲</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { touch-action: none; overflow: hidden; background-color: #f0f9ff; font-family: sans-serif; -webkit-user-select: none; user-select: none; }
-        #game-container { position: relative; width: 100vw; height: 100vh; background: linear-gradient(to bottom, #7dd3fc, #e0f2fe); overflow: hidden; }
+        /* 基本樣式與禁止選取 */
+        body { 
+            touch-action: none; 
+            overflow: hidden; 
+            background-color: #f0f9ff; 
+            font-family: sans-serif; 
+            -webkit-user-select: none; 
+            user-select: none;
+            -webkit-touch-callout: none; /* 禁止 iOS 長按彈出選單 */
+        }
+
+        #game-container { 
+            position: relative; 
+            width: 100vw; 
+            height: 100vh; 
+            background: linear-gradient(to bottom, #7dd3fc, #e0f2fe); 
+            overflow: hidden;
+            transition: filter 0.3s ease; /* 用於切換視窗時的模糊效果 */
+        }
+
+        /* 💡 截圖與列印保護：列印時隱藏所有內容 */
+        @media print {
+            body { display: none !important; }
+            #game-container { display: none !important; }
+        }
+
+        /* 當視窗失去焦點時的模糊類別 */
+        .window-blur {
+            filter: blur(20px) grayscale(100%);
+        }
+
+        /* 原有遊戲元件樣式 */
         #player { position: absolute; bottom: 40px; width: 80px; height: 80px; transition: left 0.05s linear; z-index: 10; pointer-events: none; }
         .falling-item { position: absolute; width: 45px; height: 45px; z-index: 5; display: flex; align-items: center; justify-content: center; pointer-events: none; }
         #flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.3); display: none; pointer-events: none; z-index: 50; }
@@ -22,7 +52,7 @@
         #leaderboard-list::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 10px; border: 2px solid #f1f5f9; }
         #leaderboard-list { scrollbar-width: thin; scrollbar-color: #3b82f6 #f1f5f9; }
 
-        /* 角色圖片動畫與適應性樣式 */
+        /* 角色圖片動畫樣式 */
         .character-img {
             pointer-events: none;
             filter: drop-shadow(0 10px 15px rgba(0,0,0,0.15));
@@ -32,11 +62,33 @@
         }
         @keyframes mascotFloat {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-12px); }
+        }
+
+        /* 💡 安全遮罩提示 */
+        #security-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            color: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            text-align: center;
+            padding: 20px;
         }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;"> <!-- 💡 禁止右鍵 -->
+
+<!-- 安全遮罩 (當偵測到可能截圖行為時顯示) -->
+<div id="security-overlay">
+    <div class="text-6xl mb-6">🔒</div>
+    <h2 class="text-2xl font-bold mb-4">安全防護啟動</h2>
+    <p>為保護資訊安全與宣導內容，本遊戲禁止截圖功能。<br>請回到遊戲畫面繼續挑戰。</p>
+</div>
 
 <div id="game-container">
     <!-- UI 資訊欄 -->
@@ -58,14 +110,14 @@
         <p class="text-gray-600 text-sm mb-6 px-8 leading-relaxed text-center font-bold">左右滑動角色，接住正義，<br>避開不當誘惑!</p>
         <div class="flex w-full max-w-md gap-4 mb-8 px-4">
             <div class="flex-1 bg-green-50 rounded-xl p-3 border border-green-200 shadow-sm text-center">
-                <div class="text-green-700 font-black mb-2 text-xs border-b pb-1 text-center">加分 (+)</div>
+                <div class="text-green-700 font-black mb-2 text-xs border-b pb-1 text-center font-bold">加分 (+)</div>
                 <div class="grid grid-cols-2 gap-1 items-center justify-items-center">
                     <div class="w-8 h-10"><svg viewBox="0 0 100 120"><rect x="15" y="10" width="70" height="100" rx="5" fill="#1a365d"/><rect x="10" y="10" width="8" height="100" fill="#2c5282"/><rect x="18" y="25" width="60" height="4" fill="#edbf2d" opacity="0.8"/><text x="52" y="65" text-anchor="middle" fill="#edbf2d" font-size="20" font-weight="black" font-family="Arial">LAW</text></svg></div>
                     <span class="text-xl">⚖️</span><span class="text-xl">☀️</span><span class="text-xl">📞</span><span class="col-span-2 text-xl text-center">👍</span>
                 </div>
             </div>
             <div class="flex-1 bg-red-50 rounded-xl p-3 border border-red-200 shadow-sm text-center">
-                <div class="text-red-700 font-black mb-2 text-xs border-b pb-1 text-center">扣分 (-)</div>
+                <div class="text-red-700 font-black mb-2 text-xs border-b pb-1 text-center font-bold">扣分 (-)</div>
                 <div class="grid grid-cols-2 gap-1 text-xl items-center justify-items-center"><span>🧧</span><span>🍾</span><span>💵</span><span>🎁</span><span class="col-span-2 text-center">💰</span></div>
             </div>
         </div>
@@ -79,7 +131,7 @@
             <div class="text-5xl mb-6">🚫</div>
             <h2 class="text-xl font-black text-red-600 mb-6 tracking-widest">法網恢恢</h2>
             <div id="alert-message" class="text-gray-800 text-lg font-black leading-snug mb-6 tracking-wide text-center"></div>
-            <div class="text-gray-400 text-xs italic font-bold">遊戲 1.5 秒後自動繼續...</div>
+            <div class="text-gray-400 text-xs italic font-bold text-center">遊戲 1.5 秒後自動繼續...</div>
         </div>
     </div>
 
@@ -87,7 +139,7 @@
     <div id="end-screen" class="absolute inset-0 bg-white z-40 hidden flex flex-col items-center p-4 text-center overflow-y-auto overflow-x-hidden">
         <div id="result-status" class="text-3xl font-black mb-2 mt-4 relative z-40"></div>
         
-        <!-- 分數與角色的橫向排列 (木瓜最左，芭樂最右) -->
+        <!-- 專業佈局核心：分數與角色橫向排列 (木瓜最左，芭樂最右) -->
         <div class="flex items-end justify-center w-full max-w-full mb-1 relative z-10 scale-90 sm:scale-100 origin-bottom">
             <div class="flex items-end -space-x-12 sm:-space-x-16">
                 <img src="259898.jpg" class="character-img w-28 sm:w-32" alt="L1">
@@ -130,11 +182,10 @@
                 </div>
 
                 <p class="text-[10px] text-gray-400 mb-2 font-bold text-center italic">↓ 拖動右側滑軸查看完整名單 ↓</p>
-                <div class="text-left bg-white/90 rounded-xl p-3 shadow-inner space-y-1 h-[240px] overflow-y-scroll border border-blue-50 text-sm mb-0" id="leaderboard-list"></div>
+                <div class="text-left bg-white/90 rounded-xl p-3 shadow-inner space-y-1 h-[240px] overflow-y-scroll border border-blue-50 text-sm mb-0 text-left" id="leaderboard-list"></div>
             </div>
         </div>
 
-        <!-- 下方 3 則宣導語 (更新第二則換行位置) -->
         <div class="grid grid-cols-3 gap-2 w-full mb-6 text-[10px] text-gray-600 border-y py-4 bg-gray-50/80 px-2 rounded-xl relative z-40 text-center leading-relaxed">
             <div class="px-1 border-r flex items-center justify-center font-black italic">
                 「送錢給公務員，<br>小心觸犯行賄罪！」
@@ -156,7 +207,6 @@
 
     <div id="flash-overlay"></div>
 
-    <!-- 角色：公務員 -->
     <div id="player">
         <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
             <rect x="25" y="60" width="50" height="40" rx="15" fill="#3b82f6" />
@@ -172,10 +222,38 @@
 </div>
 
 <script>
-    // ==========================================
-    // 【重要：Google Apps Script URL】
-    // ==========================================
     const scriptURL = "https://script.google.com/macros/s/AKfycbyV0cPrTrmYdsr77GVq7CgcEXljBhIIJuy-b1EkwLoXS5vcvu-MwfSUJAgOvBHxVMcQRg/exec";
+
+    // 💡 截圖防護邏輯 - 偵測視窗焦點與可見性
+    const gameContainer = document.getElementById('game-container');
+    const securityOverlay = document.getElementById('security-overlay');
+
+    // 1. 當使用者切換分頁或拉下控制中心時，模糊畫面防止截圖預覽
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            gameContainer.classList.add('window-blur');
+        } else {
+            gameContainer.classList.remove('window-blur');
+        }
+    });
+
+    // 2. 當視窗失去焦點 (例如按下系統截圖快捷鍵)
+    window.addEventListener('blur', () => {
+        gameContainer.classList.add('window-blur');
+    });
+    window.addEventListener('focus', () => {
+        gameContainer.classList.remove('window-blur');
+    });
+
+    // 3. 攔截常用快捷鍵
+    window.addEventListener('keydown', (e) => {
+        // 攔截 Ctrl+P (列印), Ctrl+S (儲存), F12 (檢查)
+        if ((e.ctrlKey && (e.key === 'p' || e.key === 's')) || e.key === 'F12' || e.key === 'PrintScreen') {
+            e.preventDefault();
+            securityOverlay.style.display = 'flex';
+            setTimeout(() => { securityOverlay.style.display = 'none'; }, 2000);
+        }
+    });
 
     const player = document.getElementById('player');
     const scoreElement = document.getElementById('score');
@@ -191,7 +269,6 @@
     const prizeMessage = document.getElementById('prize-message');
     const flashOverlay = document.getElementById('flash-overlay');
     const submitError = document.getElementById('submit-error');
-    const gameContainer = document.getElementById('game-container');
     const nicknameInput = document.getElementById('nickname');
     const rankPrizeMsg = document.getElementById('rank-prize-msg');
     const finalRestartBtn = document.getElementById('final-restart-btn');
@@ -211,8 +288,11 @@
     function getSlogan() { return slogans.length ? slogans.pop() : slogansBase[Math.floor(Math.random()*slogansBase.length)]; }
 
     const handleMove = (x) => { if (!gameActive) return; playerX = Math.max(0, Math.min(x - 40, window.innerWidth - 80)); player.style.left = playerX + 'px'; };
-    gameContainer.addEventListener('mousemove', (e) => handleMove(e.clientX));
-    gameContainer.addEventListener('touchmove', (e) => {
+    
+    // 滑鼠與觸控移動
+    const activeGameContainer = document.getElementById('game-container');
+    activeGameContainer.addEventListener('mousemove', (e) => handleMove(e.clientX));
+    activeGameContainer.addEventListener('touchmove', (e) => {
         if (gameActive) {
             handleMove(e.touches[0].clientX);
             if (e.cancelable) e.preventDefault();
@@ -320,7 +400,7 @@
     function showFloat(x, p) {
         const f = document.createElement('div'); f.className = 'floating-text text-xl'; f.innerText = p > 0 ? `+${p}` : p;
         f.style.color = p > 0 ? '#16a34a' : '#dc2626'; f.style.left = x; f.style.top = (player.offsetTop - 20) + 'px';
-        gameContainer.appendChild(f); setTimeout(() => f.remove(), 1000);
+        activeGameContainer.appendChild(f); setTimeout(() => f.remove(), 1000);
     }
 
     function flashRed() { flashOverlay.style.display = 'block'; setTimeout(() => flashOverlay.style.display = 'none', 100); }
